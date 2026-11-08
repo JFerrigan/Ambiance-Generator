@@ -34,6 +34,25 @@ local o = scene.get_object(ball) -- a name such as 'ball' also works
 
 Circles are dynamic; boxes are static and axis-aligned, specified by their center. Defaults: x/y/vx/vy=0, radius=15, width=100, height=10, density=1, restitution=0.94, friction=0, color as above, trail=0. Omitted names become `object_1`, etc. Coordinates are -20000..20000; velocities -10000..10000; radius 1..1000; box dimensions 1..10000; density 0.01..100; restitution/friction 0..1. Static boxes reject nonzero velocities and trails. `radius` is used by circles; `width`/`height` by boxes. Trail lifetime is 0..2 seconds, sampled every 1/30 second. At most 256 objects may be created. Body rotation is locked; continuous collision detection is enabled for circles. There is no force, teleport, spawn-after-initialization, or body removal API in this release.
 
+## Analytic pendulums
+
+```lua
+local weight = scene.add_pendulum{
+  name='weight', anchor_x=640, anchor_y=80, length=520, radius=6,
+  amplitude=30, color={110,178,220}, rope_color={48,58,74},
+  cycle_duration=60, swings=24
+}
+local o = scene.get_object(weight) -- id/name/x/y/vx/vy/radius, as for circles
+```
+
+The weight follows `angle = amplitude * cos(2*pi*swings*cycle_phase)`, measured from the downward vertical toward positive X. Position is `(anchor_x + length*sin(angle), anchor_y + length*cos(angle))`; velocity is its analytic derivative in pixels/second. All pendulums start at positive amplitude with zero velocity. Integer sample time is reduced modulo the cycle and each swing before trigonometry, so corresponding cycle phases evaluate identically without accumulated drift. `get_object` exposes the completed tick state; rendering evaluates directly at the presentation sample to preserve cable length between ticks.
+
+Defaults: anchor_x/y=0, length=100, radius=6, amplitude=30 degrees, color={200,220,255}, rope_color={65,75,90}, cycle_duration=60 seconds, swings=24. Anchor coordinates are ±20000; length 1..10000; radius 1..1000; amplitude 0..180 degrees; cycle_duration 0.001..3600 seconds and must contain whole 48 kHz sample frames; swings must be an integer 1..10000. Creation is initialization-only. Names/handles and the 256-object budget are shared with circles and boxes. Pendulums have no Box2D body or collision callbacks, and accept no trails, velocity, density, or restitution settings. They do not affect other objects.
+
+This is an ideal periodic model with prescribed periods and constant amplitude, independent of configured gravity. For a shared gravitational acceleration, small-angle pendulum periods scale with the square root of length. Thus lengths proportional to `1/swings^2` give the requested period ratios. The 30-degree example uses these ratios for a repeating visual arrangement; it does not model the finite-angle period correction of a physical pendulum.
+
+The example schedules two center crossings per complete swing, at cycle fractions `(2*k+1)/(4*swings)`, with `k=0..2*swings-1`. Each rational crossing is rounded upward to the first audio sample at or after it, using integer arithmetic. The update callback emits it once when its sample falls in the upcoming half-open tick interval. Absolute cycle indices preserve scheduling across minute boundaries.
+
 ## Seeded randomness
 
 ```lua
@@ -70,7 +89,7 @@ audio.play{
 }
 ```
 
-Defaults are shown except `instrument='sine'` and `at=current callback time`. `at` is absolute scene seconds, rounded to the nearest 48 kHz sample frame. It must be current time through 30 seconds ahead, and never in the rendered past. Frequency 20..12000 Hz; gain 0..1; pan -1..1; duration 0.002..30 seconds; attack 0.001..5 seconds; release 0.001..10 seconds. Sounds outside the requested output interval are inaudible. Notes overlapping the end are truncated with the shared final 5 ms fade.
+Defaults are shown except `instrument='sine'` and `at=current callback time`. `at` is absolute scene seconds, rounded to the nearest 48 kHz sample frame. It must be current time through 30 seconds ahead, and never in the rendered past. Frequency 20..12000 Hz; gain 0..1; pan -1..1; duration 0.002..30 seconds; attack 0.001..5 seconds; release 0.001..10 seconds. Sounds outside the requested output interval are inaudible. Notes overlapping a finite preview/export end are truncated with the shared final 5 ms fade. Endless preview has no configured end or terminal fade. Absolute audio timestamps support up to `(2^53-1)/48000` seconds, subject to the same 30-second lookahead.
 
 The stereo float mixer uses equal-power panning, a 0.45 master scale and `x/(1+abs(x))` soft limiting. Sine notes have linear attack/release. Bells add decaying partials at 1, 2.76 and 5.4 times the fundamental; partials above 22 kHz are omitted. This is clipping protection, not loudness normalization.
 

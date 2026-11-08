@@ -1,0 +1,27 @@
+Audio pass: 2880000 stereo sample frames
+  audio 30s
+Video pass: 1800 frames
+  video 10s / 60s
+  video 20s / 60s
+  video 30s / 60s
+  video 40s / 60s
+  video 50s / 60s
+Saved "/Users/jakeferrigan/Documents/AmbianceGenerator/output/pendulum_wave.mp4"; events 4b3cf8b546d17f66; PCM 8b857856d7e24239
+       14.47 real        21.96 user         3.34 sys
+           313868288  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               23092  page reclaims
+                 194  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+              103063  voluntary context switches
+              268427  involuntary context switches
+        172776838417  instructions retired
+         48884179298  cycles elapsed
+             6963632  peak memory footprint

@@ -1,0 +1,6 @@
+Both complete 60-second exports matched:
+event_digest: 4b3cf8b546d17f66
+pcm24_digest: 8b857856d7e24239
+rgba_digest: 55542c433bc86960
+Verified H.264 1280x720 at 30 FPS, 1800 frames; H.264/AAC streams both 60.000000 seconds.
+Verified source WAV: stereo PCM24, 48000 Hz, 2880000 sample frames, 17280044 bytes, final sample zero.

@@ -1,0 +1,13 @@
+Test project /Users/jakeferrigan/Documents/AmbianceGenerator/build/sanitize
+    Start 1: core_contracts
+1/4 Test #1: core_contracts ...................   Passed   15.68 sec
+    Start 2: export_contracts
+2/4 Test #2: export_contracts .................   Passed   14.89 sec
+    Start 3: transport_contracts
+3/4 Test #3: transport_contracts ..............   Passed    1.17 sec
+    Start 4: pendulum_contracts
+4/4 Test #4: pendulum_contracts ...............   Passed    8.22 sec
+
+100% tests passed out of 4
+
+Total Test time (real) =  39.97 sec

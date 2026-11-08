@@ -1,6 +1,6 @@
 # Ambiance Generator
 
-A local native instrument for this Apple Silicon Mac. Lua describes bouncing circles, collision music, and motion-controlled drones. Preview with sound, edit in your text editor, reload, and export stereo WAV or H.264/AAC MP4. Runtime uses no network services or telemetry.
+A local native instrument for this Apple Silicon Mac. Lua describes bouncing circles, collision music, motion-controlled drones, and a repeating pendulum wave. Preview with sound, edit in your text editor, reload, and export stereo WAV or H.264/AAC MP4. Runtime uses no network services or telemetry.
 
 ## Run the tested local build
 
@@ -9,11 +9,29 @@ From this folder:
 ```sh
 ./build/release/ambiance preview examples/bouncing_bells.lua
 ./build/release/ambiance preview examples/orbital_drone.lua
+./build/release/ambiance preview examples/pendulum_wave.lua --endless
 ```
 
 Use **Space** to pause/resume, **R** to restart the last good scene, **L** to reload the file from disk, and **Esc** to exit. Edit an example in an external editor and press L. A reload checks initialization and the first 100 ms of callbacks before replacing playback; invalid candidates leave the working composition running. Errors appear below the scene and in the terminal. A callback can still fail later in a composition.
 
-Scene time, playback state, errors, controls, and underruns appear outside the exported image. Resizing preserves logical scene coordinates and adds letterboxing. Playback ends at the configured duration. Restart repeats the composition from its saved source and seed, even if disk edits have not been reloaded.
+Scene time, playback state, errors, controls, and underruns appear outside the exported image. Resizing preserves logical scene coordinates and adds letterboxing. Preview ends at the configured duration by default. `preview --endless` keeps the same engine, audio queue, and clock running past that duration, with no terminal fade. It preserves Space/R/L/Esc behavior. Exports always use a finite duration. Restart repeats the composition from its saved source and seed, even if disk edits have not been reloaded.
+
+## Repeating pendulum wave
+
+[pendulum_wave.lua](examples/pendulum_wave.lua) releases 12 weights from rest at 30 degrees from one pivot. The lengths are `520 * (24 / swings)^2` pixels, for 24 through 35 complete swings per 60 seconds. Each bottom crossing plays a quiet bell in ascending D-major pentatonic pitches, with shorter pendulums playing higher notes. Trails and flashes are off so the starting image repeats exactly every minute.
+
+This is an ideal undamped model with prescribed periods. The lengths follow small-angle pendulum ratios; the motion does not simulate gravity, finite-angle period corrections, collisions, or energy loss. Geometry repeats exactly. Overlapping bell tails and the finite export's end fade mean the audio file is not a seamless loop.
+
+Run continuously with the `--endless` command above. Export a complete minute:
+
+```sh
+mkdir -p output
+./build/release/ambiance export examples/pendulum_wave.lua \
+  --output output/pendulum_wave.mp4 --duration 60 \
+  --width 1280 --height 720 --fps 30 --keep-wav
+```
+
+See [pendulum verification](docs/verification.md#pendulum-wave-and-endless-preview) for measured results.
 
 ## Build from the included sources
 
@@ -68,7 +86,7 @@ WAV is stereo 48 kHz 24-bit PCM, without dither. The final 5 ms fade to zero wit
 
 ## Authoring and limits
 
-Start with [bouncing_bells.lua](examples/bouncing_bells.lua) or [orbital_drone.lua](examples/orbital_drone.lua). The complete API, units, scheduling rules, parameter limits, and restriction policy are in [docs/scripting-api.md](docs/scripting-api.md). The drone example keeps two oscillators alive and smoothly changes pitch, gain, and stereo position from object motion.
+Start with [bouncing_bells.lua](examples/bouncing_bells.lua) [orbital_drone.lua](examples/orbital_drone.lua), or [pendulum_wave.lua](examples/pendulum_wave.lua). The complete API, units, scheduling rules, parameter limits, and restriction policy are in [docs/scripting-api.md](docs/scripting-api.md). The drone example keeps two oscillators alive and smoothly changes pitch, gain, and stereo position from object motion.
 
 The engine uses 120 fixed physics ticks and 48,000 audio sample frames per second. A tick is exactly 400 sample frames. Repeatability is guaranteed for the same supported build/platform, source, seed, duration, and output settings. The manifest's FNV-1a hashes detect accidental changes; they are not security signatures. Export FPS, window size, and audio callback block size do not change the composition.
 
