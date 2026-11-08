@@ -1,4 +1,9 @@
 #include "ambiance/core.hpp"
+#include "ambiance/render.hpp"
+#include <algorithm>
+#include <map>
+#include <sstream>
+#include <tuple>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -20,7 +25,7 @@ void rejects(const std::string &settings, const std::string &message) {
   check(rejected, ("expected rejection: " + settings).c_str());
 }
 } // namespace
-int main() {
+int main(int argc, char **argv) {
   try {
     Session wave(R"(scene.configure{};for n=24,35 do
       local id=scene.add_pendulum{name='p'..n,anchor_x=640,anchor_y=80,
@@ -103,6 +108,65 @@ int main() {
       }
       check(rejected, "creation restriction was not enforced");
     }
+    check(argc == 2, "source root required");
+    auto source = readScript(std::string(argv[1]) + "/examples/pendulum_wave.lua");
+    Session scene(source, "pendulum_wave");
+    Canvas canvas(1280, 720);
+    for (uint64_t sample : {0ULL, 1ULL, 12345ULL, 360000ULL, 720000ULL, 1440000ULL,
+                            2879999ULL, 9007199254740991ULL}) {
+      canvas.draw(scene.snapshot(), sample);
+      auto hash = canvas.hash().value;
+      auto changed = scene.snapshot();
+      changed.tick = sample / tickSamples + 100;
+      for (auto &o : changed.objects) {
+        o.x = o.y = o.previousX = o.previousY = -1000;
+      }
+      canvas.draw(changed, sample + 60 * sampleRate);
+      check(canvas.hash().value == hash, "presentation phase depends on cycle or snapshot tick");
+    }
+    // Independent oracle enumerates every crossing in two cycles, then orders by tick and
+    // object (the callback's dispatch order). Verify all note parameters and exact samples.
+    std::vector<std::tuple<uint64_t, int, uint64_t>> crossings;
+    for (int n = 24; n <= 35; ++n) {
+      for (uint64_t k = 0; k < uint64_t(4 * n); ++k) {
+        uint64_t numerator = (2 * k + 1) * 60 * sampleRate;
+        uint64_t at = numerator / (4 * n) + (numerator % (4 * n) != 0);
+        crossings.emplace_back(at / tickSamples, n, at);
+      }
+    }
+    std::sort(crossings.begin(), crossings.end());
+    check(crossings.size() == 1416, "wrong oracle count");
+    std::map<uint64_t, int> simultaneous;
+    bool tickBoundary = false;
+    std::ostringstream oracle;
+    oracle << "local expected={";
+    for (auto [tick, n, at] : crossings) {
+      oracle << "{" << at << "," << n - 23 << "},";
+      simultaneous[at]++;
+      tickBoundary |= at % tickSamples == 0;
+    }
+    check(tickBoundary, "oracle lacks tick-boundary crossings");
+    check(std::any_of(simultaneous.begin(), simultaneous.end(),
+                      [](auto &v) { return v.second >= 6; }), "oracle lacks simultaneous notes");
+    oracle << R"(};local count=0;local play=audio.play
+      local midi={50,52,54,57,59,62,64,66,69,71,74,76}
+      audio.play=function(s)
+        count=count+1;local e=expected[count];assert(e,'unexpected crossing')
+        assert(math.floor(s.at*48000+0.5)==e[1],'crossing timestamp/order')
+        assert(s.frequency==440*2^((midi[e[2]]-69)/12),'pitch order')
+        assert(s.instrument=='bell' and s.gain==0.09 and s.pan==0)
+        assert(s.duration==0.65 and s.attack==0.003 and s.release==0.5)
+        play(s)
+      end
+      )";
+    oracle << source;
+    oracle << R"(
+      scene.on_update(function(t)
+        if t>=120 then assert(count==1416,'missing/duplicated crossings') end
+      end))";
+    Session verified(oracle.str(), "crossing-oracle");
+    verified.advanceTo(120 * sampleRate + tickSamples);
+    std::cout << "1416 crossing notes verified across two cycles; repeating RGBA phases passed\n";
     std::cout << "Pendulum motion, large timeline, mixed physics and Lua contracts passed\n";
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';

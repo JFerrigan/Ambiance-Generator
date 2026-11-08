@@ -64,6 +64,15 @@ with tempfile.TemporaryDirectory(prefix='ambiance tests ',dir=os.environ.get('AM
     print(f'Timing: video onset {first_flash/30:.6f}s; decoded AAC onset {onset/48000:.6f}s; decoded AAC samples {len(decoded)//2}; source samples 480000',flush=True)
     packets=json.loads(subprocess.check_output([ffprobe,'-v','error','-select_streams','a:0','-read_intervals','%+#1','-show_packets','-of','json',str(one)]))
     print('AAC first packet:',packets['packets'][0],flush=True)
+    # Pendulum note scheduling, PCM and raw pixels repeat across independent exports.
+    pendulum = root/'examples/pendulum_wave.lua'
+    repeats=[]
+    for i in (1,2):
+        target=out/f'pendulum{i}.mp4'
+        run('export',pendulum,'--output',target,'--duration','2','--width','320','--height','180')
+        repeats.append(manifest(target))
+    for key in ('event_digest','pcm24_digest','rgba_digest'):
+        assert repeats[0][key]==repeats[1][key], key
     # WAV-only export deliberately points to unavailable encoder/probe.
     no_encoder=dict(os.environ,AMBIANCE_FFMPEG='/does/not/exist',AMBIANCE_FFPROBE='/does/not/exist')
     run('export',scene,'--output',out/'audio.wav','--duration','1',env=no_encoder)

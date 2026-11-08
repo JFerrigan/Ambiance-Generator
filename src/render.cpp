@@ -51,9 +51,27 @@ void Canvas::draw(const Snapshot &s, uint64_t sample) {
     if (age >= 0 && age < t.life)
       disk(t.x, t.y, t.radius * .65, t.color, .22 * (1 - age / t.life));
   }
+  // Draw cables behind all weights. Analytic evaluation preserves length between ticks.
+  for (auto &o : s.objects) {
+    if (!o.pendulum)
+      continue;
+    auto exact = o;
+    evaluatePendulum(exact, sample);
+    const auto &p = *o.pendulum;
+    set(p.ropeColor);
+    SDL_RenderLine(renderer_, float(ox + p.anchorX * scale), float(oy + p.anchorY * scale),
+                   float(ox + exact.x * scale), float(oy + exact.y * scale));
+    disk(p.anchorX, p.anchorY, 3, p.ropeColor, 1);
+  }
   for (auto &o : s.objects) {
     double a = std::clamp((double(sample) / tickSamples) - (double(s.tick) - 1), 0.0, 1.0);
     double x = o.previousX + (o.x - o.previousX) * a, y = o.previousY + (o.y - o.previousY) * a;
+    if (o.pendulum) {
+      auto exact = o;
+      evaluatePendulum(exact, sample);
+      x = exact.x;
+      y = exact.y;
+    }
     if (o.radius) {
       disk(x, y, o.radius + 3, o.color, .12);
       disk(x, y, o.radius, o.color, 1);
