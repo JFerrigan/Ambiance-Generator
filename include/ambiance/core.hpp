@@ -18,13 +18,21 @@ struct Config {
   Color background{12, 17, 29, 255};
   double minImpulse = .01, cooldown = .12;
 };
+struct Pendulum {
+  double anchorX = 0, anchorY = 0, length = 100, amplitude = 30; // degrees
+  Color ropeColor{65, 75, 90, 255};
+  uint64_t cycleSamples = 60 * sampleRate, swings = 24;
+};
 struct Object {
   int id = 0;
   std::string name;
   double x = 0, y = 0, previousX = 0, previousY = 0, vx = 0, vy = 0, radius = 0, width = 0,
          height = 0, trail = 0;
   Color color;
+  std::optional<Pendulum> pendulum;
 };
+// Evaluate prescribed motion directly from the integer timeline, without phase accumulation.
+void evaluatePendulum(Object &, uint64_t sample);
 struct Trail {
   double x, y, time, radius;
   Color color;

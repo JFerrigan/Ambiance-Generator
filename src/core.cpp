@@ -13,10 +13,25 @@ extern "C" {
 #include <fstream>
 #include <iomanip>
 #include <map>
+#include <numbers>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 namespace ambiance {
+void evaluatePendulum(Object &o, uint64_t sample) {
+  const auto &p = o.pendulum.value();
+  // Reduce before converting to floating point, including at very large timeline indices.
+  uint64_t phaseSample = ((sample % p.cycleSamples) * p.swings) % p.cycleSamples;
+  double phase = 2 * std::numbers::pi * double(phaseSample) / double(p.cycleSamples);
+  double amplitude = p.amplitude * std::numbers::pi / 180;
+  double angle = amplitude * std::cos(phase);
+  double angularVelocity = -amplitude * std::sin(phase) * 2 * std::numbers::pi *
+                           double(p.swings) * sampleRate / double(p.cycleSamples);
+  o.x = p.anchorX + p.length * std::sin(angle);
+  o.y = p.anchorY + p.length * std::cos(angle);
+  o.vx = p.length * std::cos(angle) * angularVelocity;
+  o.vy = -p.length * std::sin(angle) * angularVelocity;
+}
 void Digest::bytes(const void *p, size_t n) {
   auto *b = static_cast<const unsigned char *>(p);
   while (n--) {
@@ -338,6 +353,7 @@ struct Session::Impl {
     function("configure", bind<&Impl::configure>);
     function("add_circle", bind<&Impl::circle>);
     function("add_box", bind<&Impl::box>);
+    function("add_pendulum", bind<&Impl::pendulum>);
     function("random", bind<&Impl::random>);
     function("on_collision", bind<&Impl::listen>);
     function("on_update", bind<&Impl::update>);
@@ -457,6 +473,47 @@ struct Session::Impl {
   }
   int box() {
     return add(false);
+  }
+  int pendulum() {
+    require();
+    if (!loading)
+      fail("objects can only be created during scene initialization");
+    if (state.objects.size() >= 256)
+      fail("object budget exceeded (256)");
+    keys(L, {"name", "anchor_x", "anchor_y", "length", "radius", "amplitude", "color",
+             "rope_color", "cycle_duration", "swings"});
+    Object o;
+    o.id = int(state.objects.size() + 1);
+    o.name = str(L, "name", "");
+    if (o.name.empty())
+      o.name = "object_" + std::to_string(o.id);
+    for (auto &a : state.objects)
+      if (a.name == o.name)
+        fail("duplicate object name: " + o.name);
+    Pendulum p;
+    p.anchorX = number(L, "anchor_x", 0, -20000, 20000);
+    p.anchorY = number(L, "anchor_y", 0, -20000, 20000);
+    p.length = number(L, "length", 100, 1, 10000);
+    p.amplitude = number(L, "amplitude", 30, 0, 180);
+    p.ropeColor = color(L, "rope_color", p.ropeColor);
+    double cycle = number(L, "cycle_duration", 60, .001, 3600) * sampleRate;
+    if (std::abs(cycle - std::round(cycle)) > 1e-7)
+      fail("cycle_duration must contain whole audio sample frames");
+    p.cycleSamples = uint64_t(std::llround(cycle));
+    double swings = number(L, "swings", 24, 1, 10000);
+    if (swings != std::floor(swings))
+      fail("swings must be an integer");
+    p.swings = uint64_t(swings);
+    o.radius = number(L, "radius", 6, 1, 1000);
+    o.color = color(L, "color", {});
+    o.pendulum = p;
+    evaluatePendulum(o, 0);
+    o.previousX = o.x;
+    o.previousY = o.y;
+    bodies.push_back(b2_nullBodyId);
+    state.objects.push_back(o);
+    lua_pushinteger(L, o.id);
+    return 1;
   }
   int random() {
     require();
@@ -664,13 +721,17 @@ struct Session::Impl {
     ++state.tick;
     now = state.tick * tickSamples;
     for (size_t i = 0; i < bodies.size(); i++) {
-      auto p = b2Body_GetPosition(bodies[i]);
-      auto v = b2Body_GetLinearVelocity(bodies[i]);
       auto &o = state.objects[i];
-      o.x = double(p.x) * 100;
-      o.y = double(p.y) * 100;
-      o.vx = double(v.x) * 100;
-      o.vy = double(v.y) * 100;
+      if (o.pendulum) {
+        evaluatePendulum(o, now);
+      } else {
+        auto p = b2Body_GetPosition(bodies[i]);
+        auto v = b2Body_GetLinearVelocity(bodies[i]);
+        o.x = double(p.x) * 100;
+        o.y = double(p.y) * 100;
+        o.vx = double(v.x) * 100;
+        o.vy = double(v.y) * 100;
+      }
       digest.add(o.x);
       digest.add(o.y);
       digest.add(o.vx);

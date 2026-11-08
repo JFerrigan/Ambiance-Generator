@@ -74,3 +74,6 @@ add_test(NAME transport_contracts COMMAND transport_tests)
 # Explicit desktop smoke check; not part of the hardware-free CTest suite.
 add_executable(preview_smoke tests/preview_smoke.cpp)
 target_link_libraries(preview_smoke PRIVATE ambiance_preview ambiance_export)
+add_executable(pendulum_tests tests/pendulum_tests.cpp)
+target_link_libraries(pendulum_tests PRIVATE ambiance_render)
+add_test(NAME pendulum_contracts COMMAND pendulum_tests ${CMAKE_CURRENT_SOURCE_DIR})
