@@ -1,0 +1,11 @@
+Test project /Volumes/AmbianceVerification/release
+    Start 1: core_contracts
+1/3 Test #1: core_contracts ...................   Passed    2.92 sec
+    Start 2: export_contracts
+2/3 Test #2: export_contracts .................   Passed    5.75 sec
+    Start 3: transport_contracts
+3/3 Test #3: transport_contracts ..............   Passed    0.58 sec
+
+100% tests passed out of 3
+
+Total Test time (real) =   9.26 sec

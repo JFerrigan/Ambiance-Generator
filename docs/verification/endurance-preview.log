@@ -1,0 +1,22 @@
+Audio: MacBook Pro Speakers, backend period 256 x 2, estimated output latency 13.0208ms
+2026-11-08 03:02:14.871 ambiance[16057:25845551] +[IMKClient subclass]: chose IMKClient_Modern
+2026-11-08 03:02:14.871 ambiance[16057:25845551] +[IMKInputSession subclass]: chose IMKInputSession_Modern
+Preview elapsed=600.004s, scene=599.997s, presentation p95=4.39483ms, worker max=7.41383ms, underruns=0
+      600.19 real       265.45 user        44.23 sys
+            84639744  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+            17500722  page reclaims
+                   7  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   1  messages sent
+                   0  messages received
+                   0  signals received
+                  96  voluntary context switches
+             1984544  involuntary context switches
+       5969658803574  instructions retired
+        888470543211  cycles elapsed
+           343212896  peak memory footprint

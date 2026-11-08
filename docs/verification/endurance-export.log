@@ -1,0 +1,99 @@
+Audio pass: 28800000 stereo sample frames
+  audio 30s
+  audio 60s
+  audio 90s
+  audio 120s
+  audio 150s
+  audio 180s
+  audio 210s
+  audio 240s
+  audio 270s
+  audio 300s
+  audio 330s
+  audio 360s
+  audio 390s
+  audio 420s
+  audio 450s
+  audio 480s
+  audio 510s
+  audio 540s
+  audio 570s
+Video pass: 18000 frames
+  video 10s / 600s
+  video 20s / 600s
+  video 30s / 600s
+  video 40s / 600s
+  video 50s / 600s
+  video 60s / 600s
+  video 70s / 600s
+  video 80s / 600s
+  video 90s / 600s
+  video 100s / 600s
+  video 110s / 600s
+  video 120s / 600s
+  video 130s / 600s
+  video 140s / 600s
+  video 150s / 600s
+  video 160s / 600s
+  video 170s / 600s
+  video 180s / 600s
+  video 190s / 600s
+  video 200s / 600s
+  video 210s / 600s
+  video 220s / 600s
+  video 230s / 600s
+  video 240s / 600s
+  video 250s / 600s
+  video 260s / 600s
+  video 270s / 600s
+  video 280s / 600s
+  video 290s / 600s
+  video 300s / 600s
+  video 310s / 600s
+  video 320s / 600s
+  video 330s / 600s
+  video 340s / 600s
+  video 350s / 600s
+  video 360s / 600s
+  video 370s / 600s
+  video 380s / 600s
+  video 390s / 600s
+  video 400s / 600s
+  video 410s / 600s
+  video 420s / 600s
+  video 430s / 600s
+  video 440s / 600s
+  video 450s / 600s
+  video 460s / 600s
+  video 470s / 600s
+  video 480s / 600s
+  video 490s / 600s
+  video 500s / 600s
+  video 510s / 600s
+  video 520s / 600s
+  video 530s / 600s
+  video 540s / 600s
+  video 550s / 600s
+  video 560s / 600s
+  video 570s / 600s
+  video 580s / 600s
+  video 590s / 600s
+Saved "/Volumes/AmbianceVerification/endurance.mp4"; events bd244dac67abf197; PCM 05c98b16201698f9
+      161.13 real       212.57 user        31.93 sys
+           376913920  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               29355  page reclaims
+                 249  page faults
+                   0  swaps
+                   8  block input operations
+                  28  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+             1026389  voluntary context switches
+             2599350  involuntary context switches
+       2203627629544  instructions retired
+        570609587813  cycles elapsed
+             9093600  peak memory footprint

@@ -1,0 +1,18 @@
+2026-11-08 03:11:41.363 preview_smoke[25144:25870665] +[IMKClient subclass]: chose IMKClient_Modern
+2026-11-08 03:11:41.363 preview_smoke[25144:25870665] +[IMKInputSession subclass]: chose IMKInputSession_Modern
+Paused at sample 15297
+Resumed at sample 15297
+Restarted
+/var/folders/qx/7c7ywxhs7gv197gz2_5r3g800000gn/T/ambiance-ui-25144/scene.lua [load at 0.000000s]: ...wxhs7gv197gz2_5r3g800000gn/T/ambiance-ui-25144/scene.lua:1: unknown setting: unknown_key
+stack traceback:
+	[C]: in field 'configure'
+	...wxhs7gv197gz2_5r3g800000gn/T/ambiance-ui-25144/scene.lua:1: in main chunk
+  scene.configure{unknown_key=1}
+/var/folders/qx/7c7ywxhs7gv197gz2_5r3g800000gn/T/ambiance-ui-25144/scene.lua [on_update at 1.008333s]: ...wxhs7gv197gz2_5r3g800000gn/T/ambiance-ui-25144/scene.lua:1: working scene survived rejected reload
+stack traceback:
+	[C]: in function 'error'
+	...wxhs7gv197gz2_5r3g800000gn/T/ambiance-ui-25144/scene.lua:1: in function <...wxhs7gv197gz2_5r3g800000gn/T/ambiance-ui-25144/scene.lua:1>
+  scene.configure{duration=10};scene.add_circle{x=200,y=100};scene.on_update(function(t) if t>1 then error('working scene survived rejected reload') end end)
+Reloaded successfully
+Preview elapsed=2.62612s, scene=0.6065s, presentation p95=2.59575ms, worker max=0.05675ms, underruns=0
+Native preview Space/R/L/Esc and failed reload preservation passed
