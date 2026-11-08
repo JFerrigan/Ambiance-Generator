@@ -29,7 +29,7 @@ struct Transport::Impl : PlaybackBuffer {
   std::thread worker;
   ma_device device{};
   std::atomic<bool> deviceFault{false};
-  bool initialized = false, noAudio = false;
+  bool initialized = false, noAudio = false, endless = false;
   uint64_t total = 0, latency = 0;
   static void callback(ma_device *d, void *out, const void *, ma_uint32 n) {
     static_cast<Impl *>(d->pUserData)->consume(static_cast<float *>(out), n);
@@ -43,9 +43,10 @@ struct Transport::Impl : PlaybackBuffer {
       self->playing.store(false);
     }
   }
-  Impl(std::unique_ptr<Session> s, bool silent, double extra)
-      : scene(std::move(s)), noAudio(silent) {
-    total = uint64_t(std::llround(scene->config().duration * 48000));
+  Impl(std::unique_ptr<Session> s, bool silent, double extra, bool continuous)
+      : scene(std::move(s)), noAudio(silent), endless(continuous) {
+    total = endless ? std::numeric_limits<uint64_t>::max()
+                    : uint64_t(std::llround(scene->config().duration * 48000));
     endFrame = total;
     snapshots.push_back(scene->snapshot());
     if (!noAudio) {
@@ -152,7 +153,7 @@ struct Transport::Impl : PlaybackBuffer {
           scene->block(b.data());
           auto count = std::min<uint64_t>(400, total - w);
           for (uint64_t i = 0; i < count; i++) {
-            float fade = float(std::min(1.0, double(total - w - i - 1) / 240));
+            float fade = endless ? 1.f : float(std::min(1.0, double(total - w - i - 1) / 240));
             pcm[2 * ((w + i) % capacity)] = b[2 * i] * fade;
             pcm[2 * ((w + i) % capacity) + 1] = b[2 * i + 1] * fade;
           }
@@ -187,8 +188,8 @@ struct Transport::Impl : PlaybackBuffer {
     }
   }
 };
-Transport::Transport(std::unique_ptr<Session> s, bool noAudio, double latency)
-    : p_(std::make_unique<Impl>(std::move(s), noAudio, latency)) {}
+Transport::Transport(std::unique_ptr<Session> s, bool noAudio, double latency, bool endless)
+    : p_(std::make_unique<Impl>(std::move(s), noAudio, latency, endless)) {}
 Transport::~Transport() = default;
 void Transport::toggle() {
   if (!p_->getError().empty())

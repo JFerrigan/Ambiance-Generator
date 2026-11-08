@@ -65,6 +65,8 @@ with tempfile.TemporaryDirectory(prefix='ambiance tests ',dir=os.environ.get('AM
     packets=json.loads(subprocess.check_output([ffprobe,'-v','error','-select_streams','a:0','-read_intervals','%+#1','-show_packets','-of','json',str(one)]))
     print('AAC first packet:',packets['packets'][0],flush=True)
     # Pendulum note scheduling, PCM and raw pixels repeat across independent exports.
+    run('export',scene,'--output',out/'endless.wav','--endless',ok=False)
+    run('validate',scene,'--endless',ok=False)
     pendulum = root/'examples/pendulum_wave.lua'
     repeats=[]
     for i in (1,2):

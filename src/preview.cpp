@@ -37,7 +37,7 @@ void previewScene(const Options &o) {
   Canvas canvas(1280, 720);
   std::string source = readScript(o.script), message, lastRuntimeError;
   auto scene = std::make_unique<Session>(source, o.script, o.seed);
-  auto transport = std::make_unique<Transport>(std::move(scene), o.noAudio, o.latencyMs);
+  auto transport = std::make_unique<Transport>(std::move(scene), o.noAudio, o.latencyMs, o.endless);
   auto start = std::chrono::steady_clock::now();
   bool quit = false;
   uint64_t seenUnderruns = 0;
@@ -71,7 +71,7 @@ void previewScene(const Options &o) {
             worstTick = std::max(worstTick, transport->worstTickMs());
             totalUnderruns += transport->underruns();
             transport.reset();
-            transport = std::make_unique<Transport>(std::move(fresh), o.noAudio, o.latencyMs);
+            transport = std::make_unique<Transport>(std::move(fresh), o.noAudio, o.latencyMs, o.endless);
             source = std::move(nextSource);
             seenUnderruns = 0;
             message = e.key.key == SDLK_L ? "Reloaded successfully" : "Restarted";
@@ -82,7 +82,7 @@ void previewScene(const Options &o) {
             std::cerr << message << "\n";
             if (!transport) {
               transport = std::make_unique<Transport>(
-                  std::make_unique<Session>(source, o.script, o.seed), o.noAudio, o.latencyMs);
+                  std::make_unique<Session>(source, o.script, o.seed), o.noAudio, o.latencyMs, o.endless);
             }
           }
         }
@@ -123,6 +123,7 @@ void previewScene(const Options &o) {
            << (transport->finished()  ? "ENDED"
                : transport->playing() ? "PLAYING"
                                       : "PAUSED")
+           << (o.endless ? "   ENDLESS" : "")
            << "   underruns " << transport->underruns();
     SDL_RenderDebugText(ui.r, 12, 10, status.str().c_str());
     SDL_RenderDebugText(ui.r, 12, float(h - 54) / 1.5,

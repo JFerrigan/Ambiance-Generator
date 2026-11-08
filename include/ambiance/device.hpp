@@ -8,7 +8,7 @@ class Transport {
   std::unique_ptr<Impl> p_;
 
 public:
-  Transport(std::unique_ptr<Session>, bool noAudio, double latencyMs);
+  Transport(std::unique_ptr<Session>, bool noAudio, double latencyMs, bool endless = false);
   ~Transport();
   void toggle();
   void rebuffer();

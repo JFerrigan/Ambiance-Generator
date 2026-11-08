@@ -610,7 +610,7 @@ struct Session::Impl {
     s.duration = number(L, "duration", 1, .002, 30);
     s.attack = number(L, "attack", .005, .001, 5);
     s.release = number(L, "release", .1, .001, 10);
-    double at = number(L, "at", double(now) / sampleRate, 0, 7200);
+    double at = number(L, "at", double(now) / sampleRate, 0, 9007199254740991.0 / sampleRate);
     s.at = uint64_t(std::llround(at * sampleRate));
     if (s.at < now || s.at > now + sampleRate * 30)
       fail("audio.at must be current time through 30 seconds ahead");

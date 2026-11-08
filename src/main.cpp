@@ -12,7 +12,7 @@ void signalHandler(int) {
 std::string help() {
   return "Ambiance Generator 1.0.0\nUsage: ambiance <preview|validate|export> scene.lua "
          "[options]\n  preview: Space pause/resume, R restart, L reload, Esc exit\n    --no-audio "
-         "--latency-ms N --preview-seconds N\n  validate: --simulate SECONDS\n  export: --output "
+         "--endless --latency-ms N --preview-seconds N\n  validate: --simulate SECONDS\n  export: --output "
          "FILE.mp4|FILE.wav --duration SECONDS\n    --width 1280 --height 720 --fps 24|30|60 "
          "--keep-wav --overwrite\n  all: --seed INTEGER\nDuration must contain whole audio sample "
          "frames and (for MP4) video frames.\n";
@@ -57,6 +57,10 @@ int main(int argc, char **argv) {
       std::string a = argv[i];
       if (!seen.insert(a).second)
         throw std::runtime_error("Duplicate option: " + a);
+      if (a == "--endless" && o.command == "preview") {
+        o.endless = true;
+        continue;
+      }
       if (a == "--no-audio" && o.command == "preview") {
         o.noAudio = true;
         continue;

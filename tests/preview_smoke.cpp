@@ -20,13 +20,14 @@ int main() {
     f << text;
   };
   const std::string good =
-      "scene.configure{duration=10};scene.add_circle{x=200,y=100};scene.on_update(function(t) if "
+      "scene.configure{duration=.1};scene.add_circle{x=200,y=100};scene.on_update(function(t) if "
       "t>1 then error('working scene survived rejected reload') end end)";
   write(good);
   Options o;
   o.command = "preview";
   o.script = path.string();
   o.noAudio = true;
+  o.endless = true;
   o.previewSeconds = 4;
   std::ostringstream log;
   auto *previous = std::cerr.rdbuf(log.rdbuf());
@@ -50,7 +51,7 @@ int main() {
     at(900);
     key(SDLK_L);
     at(2100);
-    write("scene.configure{duration=10};scene.add_circle{x=250,y=100}");
+    write("scene.configure{duration=.1};scene.add_circle{x=250,y=100}");
     key(SDLK_L);
     at(2700);
     key(SDLK_ESCAPE);
